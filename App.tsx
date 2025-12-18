@@ -1,10 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import ResumeForm from './components/ResumeForm';
 import ResumePreview from './components/ResumePreview';
 import { useResumeStore } from './store/useResumeStore';
-import { FileText, Award, Briefcase, Zap } from 'lucide-react';
+import { FileText, Award, Briefcase, Zap, Copy, Check } from 'lucide-react';
 
 // Main App component with routing
 export default function App() {
@@ -176,52 +176,86 @@ const GeneratorPage: React.FC = () => {
 // PaymentPage Component
 const PaymentPage: React.FC = () => {
     const navigate = useNavigate();
+    const [copied, setCopied] = useState(false);
 
-    const handlePayment = () => {
-        // Link de pagamento real do usuário
-        const mercadoPagoPaymentUrl = "https://mpago.la/1G8JeoY";
+    // TODO: Substitua este valor pelo seu código PIX "Copia e Cola" do Mercado Pago.
+    const pixCopyPasteCode = "00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266141740005204000053039865802BR5913NOME DO VENDEDOR6008BRASILIA62070503***6304ABCD";
+    
+    // Simula a confirmação automática do pagamento via webhook
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            navigate('/sucesso');
+        }, 12000); // Redireciona após 12 segundos para simular a confirmação
 
-        // Abre o link de pagamento em uma nova aba
-        window.open(mercadoPagoPaymentUrl, '_blank');
+        return () => clearTimeout(timer); // Limpa o timer se o componente for desmontado
+    }, [navigate]);
 
-        // Redireciona o usuário para a página de sucesso na aba atual,
-        // simulando a liberação do download após iniciar o pagamento.
+    const handleCopy = () => {
+        navigator.clipboard.writeText(pixCopyPasteCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+    
+    const handleManualRedirect = () => {
         navigate('/sucesso');
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-lg">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
                 <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-gray-900">Quase pronto!</h2>
+                    <h2 className="text-3xl font-extrabold text-gray-900">Pague com PIX para Liberar</h2>
                     <p className="mt-2 text-sm text-gray-600">
-                        Seu currículo está incrível! Realize o pagamento para fazer o download em PDF.
+                        Use o app do seu banco para ler o QR Code ou use o "Copia e Cola".
                     </p>
                 </div>
-                <div className="p-6 mt-8 bg-gray-50 rounded-lg">
-                    <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium text-gray-900">Currículo Profissional</span>
-                        <span className="text-2xl font-bold text-indigo-600">R$ 5,00</span>
+
+                <div className="flex flex-col items-center p-6 bg-gray-50 rounded-lg">
+                    <div className="w-52 h-52 bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                        {/* TODO: Substitua pelo URL da sua imagem de QR Code PIX */}
+                        <img src="https://i.imgur.com/example.png" alt="PIX QR Code" className="rounded-md" />
                     </div>
-                     <p className="mt-2 text-xs text-gray-500">Pagamento único. Acesso vitalício ao seu currículo gerado.</p>
+                    <div className="w-full">
+                        <label className="text-xs font-medium text-gray-500">PIX Copia e Cola</label>
+                        <div className="relative mt-1">
+                             <input 
+                                type="text"
+                                value={pixCopyPasteCode}
+                                readOnly
+                                className="w-full p-2 pr-16 text-xs text-gray-600 bg-gray-200 border border-gray-300 rounded-md"
+                            />
+                            <button onClick={handleCopy} className="absolute inset-y-0 right-0 px-3 flex items-center bg-gray-300 text-gray-700 rounded-r-md hover:bg-gray-400 text-xs">
+                                {copied ? <Check size={14} className="text-green-600"/> : <Copy size={14} />}
+                                <span className="ml-1">{copied ? 'Copiado!' : 'Copiar'}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div className="mt-6">
-                    <button 
-                        onClick={handlePayment}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                        Pagar com Mercado Pago e Baixar
-                    </button>
-                </div>
+
                 <div className="text-center">
-                    <p className="text-xs text-gray-500">
-                       Você será redirecionado para um ambiente seguro de pagamento.
-                    </p>
+                    <p className="text-lg font-bold text-gray-800">Valor: R$ 5,00</p>
+                </div>
+
+                <div className="mt-6 text-center">
+                   <div className="flex justify-center items-center gap-2">
+                     <svg className="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                     </svg>
+                     <span className="text-gray-600 font-medium">Aguardando confirmação do pagamento...</span>
+                   </div>
+                   <p className="text-xs text-gray-500 mt-4">
+                       A página será atualizada automaticamente após a confirmação.
+                   </p>
+                   <button onClick={handleManualRedirect} className="mt-2 text-xs text-indigo-600 hover:underline">
+                        Não atualizou? Clique aqui para continuar.
+                   </button>
                 </div>
             </div>
         </div>
     );
 };
+
 
 // SuccessPage Component
 const SuccessPage: React.FC = () => {
@@ -237,7 +271,7 @@ const SuccessPage: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900">Pagamento Aprovado!</h2>
+                <h2 className="text-3xl font-extrabold text-gray-900">Pagamento Confirmado!</h2>
                 <p className="mt-2 text-sm text-gray-600">
                     Seu currículo está pronto para download. Clique no botão abaixo para salvá-lo em formato PDF.
                 </p>
